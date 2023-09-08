@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	rest_api "github.com/brunoeduardodev/trellogo/internal/infra/rest-api"
+	"github.com/brunoeduardodev/trellogo/internal/infra/config"
+	"github.com/brunoeduardodev/trellogo/internal/infra/database"
+	"github.com/brunoeduardodev/trellogo/internal/infra/database/users"
+	"github.com/brunoeduardodev/trellogo/internal/infra/rest_api"
 	"github.com/joho/godotenv"
 )
 
@@ -13,5 +16,13 @@ func main() {
 
 	fmt.Println("Hello world")
 
-	rest_api.Start(os.Getenv("PORT"))
+	config := config.NewConfig()
+
+	fmt.Printf("PORT: %v\n", config.RestApi.Port)
+	fmt.Printf("PORT: %v\n", os.Getenv("PORT"))
+
+	db := database.NewGormDatabase()
+	userRepository := users.NewUserRepository(db)
+
+	rest_api.Start(userRepository)
 }
