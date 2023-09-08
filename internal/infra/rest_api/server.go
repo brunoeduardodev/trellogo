@@ -1,6 +1,7 @@
 package rest_api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/brunoeduardodev/trellogo/internal/infra/config"
@@ -27,9 +28,37 @@ func Start(userRepository users.UserRepository) {
 				ctx.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Could not connect to database",
 				})
+				return
 			}
 
 			ctx.JSON(http.StatusOK, users)
+		})
+
+		v1.POST("/users", func(ctx *gin.Context) {
+			var input users.CreateUserInput
+
+			err := ctx.ShouldBind(&input)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"message": fmt.Sprintf("Invalid request: %v", err),
+				})
+
+				return
+			}
+
+			err = userRepository.Create(input)
+
+			fmt.Printf("%v", input.Name)
+
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Could not connect save user",
+				})
+
+				return
+			}
+
+			ctx.JSON(http.StatusOK, gin.H{"success": true})
 		})
 
 	}
